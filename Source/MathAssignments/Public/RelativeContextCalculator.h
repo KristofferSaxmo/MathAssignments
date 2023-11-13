@@ -64,11 +64,11 @@ public:
 			ContextFlags |= static_cast<int32>(ERelativeContext::Below);
 
 		// Close
-		if(Direction.Size() < 500)
+		if(Direction.Size() < 1000)
 			ContextFlags |= static_cast<int32>(ERelativeContext::Close);
 
 		// Far
-		else if(Direction.Size() > 500)
+		else
 			ContextFlags |= static_cast<int32>(ERelativeContext::Far);
 
 		return ContextFlags;
