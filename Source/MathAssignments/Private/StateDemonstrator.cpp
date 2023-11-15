@@ -9,12 +9,14 @@ AStateDemonstrator::AStateDemonstrator()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	RootComponent = StaticMeshComponent;
+	SetRootComponent(StaticMeshComponent);
 }
 
 void AStateDemonstrator::BeginPlay()
 {
 	Super::BeginPlay();
+	ScaleInterpolator.Initialize();
+	RotationInterpolator.Initialize();
 
 	Health = 100.f;
 }
@@ -74,25 +76,16 @@ void AStateDemonstrator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
-	if(DrawArc)
-	{
-		DrawDebugCone(
-		GetWorld(),
-		GetActorLocation(),
-		GetActorForwardVector(),
-		500,
-		FMath::DegreesToRadians(45 * .5f),
-		0.f,
-		1,
-		FColor::Green
-		);
-	}
-	
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 100.f, FColor::Red);
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorRightVector() * 100.f, FColor::Green);
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorUpVector() * 100.f, FColor::Blue);
+	ScaleInterpolator.Update(DeltaTime);
+	const float ScaleValue = ScaleInterpolator.GetValue();
+	const FVector NewScale = FVector(ScaleValue, ScaleValue, ScaleValue);
+	StaticMeshComponent->GetChildComponent(0)->SetRelativeScale3D(NewScale);
 
+	RotationInterpolator.Update(DeltaTime);
+	const float RotationValue = RotationInterpolator.GetValue();
+	const FRotator NewRotation = FRotator(0, RotationValue, 0);
+	StaticMeshComponent->GetChildComponent(0)->SetRelativeRotation(NewRotation);
+	
 	for (const auto Actor : Demonstrators)
 	{
 		if (Actor == nullptr)
@@ -102,22 +95,7 @@ void AStateDemonstrator::Tick(float DeltaTime)
 	}
 }
 
-void AStateDemonstrator::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+bool AStateDemonstrator::ShouldTickIfViewportsOnly() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AStateDemonstrator::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AStateDemonstrator::MoveRight);
-}
-
-void AStateDemonstrator::MoveForward(float Value)
-{
-	const FVector ForwardVector = GetActorForwardVector();
-	AddMovementInput(ForwardVector * Value);
-}
-
-void AStateDemonstrator::MoveRight(float Value)
-{
-	const FVector RightVector = GetActorRightVector();
-	AddMovementInput(RightVector * Value);
+	return false;
 }

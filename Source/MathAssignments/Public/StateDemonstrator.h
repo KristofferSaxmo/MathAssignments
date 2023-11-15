@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interpolator.h"
 #include "GameFramework/Actor.h"
 #include "StateDemonstrator.generated.h"
 
 class UCharacterMovementComponent;
 
 UCLASS()
-class MATHASSIGNMENTS_API AStateDemonstrator : public APawn
+class MATHASSIGNMENTS_API AStateDemonstrator : public AActor
 {
 	GENERATED_BODY()
 
@@ -20,15 +21,17 @@ public:
 	virtual void BeginPlay() override;
 	void UpdateDemonstrator(float DeltaTime, AActor* Actor);
 
+	virtual bool ShouldTickIfViewportsOnly() const override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FInterpolator ScaleInterpolator;
 
-	void MoveForward(float Value);
-
-	void MoveRight(float Value);
-
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FInterpolator RotationInterpolator;
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Base")
 	UStaticMeshComponent* StaticMeshComponent;
 	
@@ -40,7 +43,4 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Context")
 	TArray<AActor*> Demonstrators;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Context")
-	bool DrawArc;
 };
