@@ -18,13 +18,10 @@ class MATHASSIGNMENTS_API UIntersectionSubsystem : public UTickableWorldSubsyste
 	UPROPERTY()
 	TArray<AIntersectionDemonstrator*> Demonstrators;
 
-	UPROPERTY()
-	APlayerController* PlayerControllerInstance;
-
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
-
+	
 	void RegisterDemonstrator(AIntersectionDemonstrator* Demonstrator);
 	void UnregisterDemonstrator(AIntersectionDemonstrator* Demonstrator);
 

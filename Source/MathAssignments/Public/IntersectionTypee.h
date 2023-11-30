@@ -1,8 +1,8 @@
 #pragma once
 
 UENUM(BlueprintType)
-enum EInterpType
+enum EIntersectionTypee
 {
-	Lerp,
-	Curve,
+	Sphere,
+	AABB,
 };

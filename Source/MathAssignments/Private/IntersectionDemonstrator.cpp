@@ -29,11 +29,6 @@ void AIntersectionDemonstrator::Tick(float DeltaTime)
 	Color = FColor::Green;
 }
 
-bool AIntersectionDemonstrator::ShouldTickIfViewportsOnly() const
-{
-	return true;
-}
-
 void AIntersectionDemonstrator::DrawShape() const
 {
 	switch (IntersectionType.GetValue())
@@ -43,8 +38,32 @@ void AIntersectionDemonstrator::DrawShape() const
 		break;
 
 	case AABB:
-		DrawDebugBox(GetWorld(), GetActorLocation(), FVector(0.5f * (Max.X - Min.X), 0.5f * (Max.Y - Min.Y), 0.5f * (Max.Z - Min.Z)), Color, false, -1, 0, 1);
+		DrawDebugBox(GetWorld(), GetActorLocation(), Size * 0.5f, Color, false, -1, 0, 1);
 		break;
+	}
+}
+
+bool AIntersectionDemonstrator::ShouldTickIfViewportsOnly() const
+{
+	return true;
+}
+
+void AIntersectionDemonstrator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	const FName Property = PropertyChangedEvent.Property->GetFName();
+
+	if (Property == GET_MEMBER_NAME_CHECKED(AIntersectionDemonstrator, IntersectionType))
+	{
+		switch (IntersectionType.GetValue())
+		{
+		case Sphere:
+			Size = FVector::ZeroVector;
+			bCollision = false;
+			break;
+		case AABB:
+			Radius = 0.f;
+			break;
+		}
 	}
 }
 

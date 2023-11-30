@@ -12,56 +12,72 @@ void UIntersectionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UIntersectionSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	for (const auto DemonstratorA : Demonstrators)
+	for (int32 A = 0; A < Demonstrators.Num(); ++A)
 	{
-		for (const auto DemonstratorB : Demonstrators)
+		for (int32 B = A + 1; B < Demonstrators.Num(); ++B)
 		{
-			if (DemonstratorA == DemonstratorB) continue;
-
-			if (DemonstratorA->IntersectionType == Sphere &&
-				DemonstratorB->IntersectionType == Sphere)
+			if (Demonstrators[A] == Demonstrators[B]) continue;
+			
+			if (Demonstrators[A]->IntersectionType == Sphere &&
+				Demonstrators[B]->IntersectionType == Sphere)
 			{
 				if (UIntersection::SphereIntersect(
-					DemonstratorA->GetActorLocation(),
-					DemonstratorA->Radius,
-					DemonstratorB->GetActorLocation(),
-					DemonstratorB->Radius))
+					Demonstrators[A]->GetActorLocation(),
+					Demonstrators[A]->Radius,
+					Demonstrators[B]->GetActorLocation(),
+					Demonstrators[B]->Radius))
 				{
-					DemonstratorA->Color = FColor::Red;
-					DemonstratorB->Color = FColor::Red;
+					Demonstrators[A]->Color = FColor::Red;
+					Demonstrators[B]->Color = FColor::Red;
 				}
 
 				continue;
 			}
 
-			if (DemonstratorA->IntersectionType == AABB &
-				DemonstratorB->IntersectionType == AABB)
+			if (Demonstrators[A]->IntersectionType == AABB &&
+				Demonstrators[B]->IntersectionType == AABB)
 			{
-				if (UIntersection::AABBIntersect(
-					DemonstratorA->GetActorLocation() + DemonstratorA->Min,
-					DemonstratorA->GetActorLocation() + DemonstratorA->Max,
-					DemonstratorB->GetActorLocation() + DemonstratorB->Min,
-					DemonstratorB->GetActorLocation() + DemonstratorB->Max))
-				{
-					DemonstratorA->Color = FColor::Red;
-					DemonstratorB->Color = FColor::Red;
-				}
+				FVector ContactPoint;
+				float Depth;
 
+				if (UIntersection::AABBIntersect(
+					Demonstrators[A]->GetActorLocation() - Demonstrators[A]->Size / 2,
+					Demonstrators[A]->GetActorLocation() + Demonstrators[A]->Size / 2,
+					Demonstrators[B]->GetActorLocation() - Demonstrators[B]->Size / 2,
+					Demonstrators[B]->GetActorLocation() + Demonstrators[B]->Size / 2,
+					ContactPoint,
+					Depth))
+				{
+					Demonstrators[A]->Color = FColor::Red;
+					Demonstrators[B]->Color = FColor::Red;
+
+					if (!(Demonstrators[A]->bCollision && Demonstrators[B]->bCollision)) continue;
+
+					FVector CollisionResult = (ContactPoint - Demonstrators[B]->GetActorLocation()) / (Demonstrators[B]->Size / 2);
+
+					for (int32 i = 0; i < 3; i++)
+					{
+						if (!FMath::IsNearlyEqual(FMath::Abs(CollisionResult[i]), 1.0f))
+							CollisionResult[i] = 0;
+					}
+
+					FVector PostCollisionLocation = Demonstrators[A]->GetActorLocation() + CollisionResult * Depth;
+
+					Demonstrators[A]->SetActorLocation(PostCollisionLocation);
+				}
 				continue;
 			}
 
-			if (DemonstratorA->IntersectionType == Sphere &
-				DemonstratorB->IntersectionType == AABB)
+			if (Demonstrators[A]->IntersectionType == Sphere && Demonstrators[B]->IntersectionType == AABB)
 			{
 				if (UIntersection::SphereAABBIntersect(
-					DemonstratorA->GetActorLocation(),
-					DemonstratorA->Radius,
-					DemonstratorB->GetActorLocation() + DemonstratorA->Min,
-					DemonstratorB->GetActorLocation() + DemonstratorA->Max))
+					Demonstrators[A]->GetActorLocation(),	
+					Demonstrators[A]->Radius,
+					Demonstrators[B]->GetActorLocation() - Demonstrators[B]->Size/2,
+					Demonstrators[B]->GetActorLocation() + Demonstrators[B]->Size/2))
 				{
-					DemonstratorA->Color = FColor::Red;
-					DemonstratorB->Color = FColor::Red;
+					Demonstrators[A]->Color = FColor::Red;
+					Demonstrators[B]->Color = FColor::Red;
 				}
 			}
 		}
@@ -72,6 +88,7 @@ void UIntersectionSubsystem::RegisterDemonstrator(AIntersectionDemonstrator* Dem
 {
 	if (Demonstrators.Contains(Demonstrator)) return;
 	Demonstrators.Add(Demonstrator);
+
 }
 
 void UIntersectionSubsystem::UnregisterDemonstrator(AIntersectionDemonstrator* Demonstrator)

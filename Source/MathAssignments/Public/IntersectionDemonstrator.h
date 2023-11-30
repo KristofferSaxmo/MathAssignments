@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IntersectionType.h"
+#include "IntersectionTypee.h"
 #include "GameFramework/Actor.h"
 #include "IntersectionDemonstrator.generated.h"
 
@@ -27,16 +27,21 @@ public:
 	virtual bool ShouldTickIfViewportsOnly() const override;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TEnumAsByte<EIntersectionType> IntersectionType;
+	TEnumAsByte<EIntersectionTypee> IntersectionType;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(EditCondition = "IntersectionType == EIntersectionType::Sphere", EditConditionHides))
 	float Radius;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(EditCondition = "IntersectionType == EIntersectionType::AABB", EditConditionHides))
-	FVector Min;
+	FVector Size;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta=(EditCondition = "IntersectionType == EIntersectionType::AABB", EditConditionHides))
-	FVector Max;
+	bool bCollision = false;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	
 
 	FColor Color = FColor::Green;
 	
